@@ -2,7 +2,9 @@ pub mod models;
 pub mod solver;
 pub mod plot;
 pub mod gui;
-
+pub mod cli;
+pub mod interactive;
+pub mod error;
 
 // pub mod models;
 // pub mod solver;

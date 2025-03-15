@@ -1,10 +1,12 @@
 // gui.rs - Handles interactive GUI using egui
-// src/gui.rs
 use crate::solver::solve_lotka_volterra;
 use crate::models::LotkaVolterraParameters;
 use eframe::egui;
 use egui_plot::{Line, Plot, PlotPoints};
+use std::error::Error;
+use crate::error::SimulationError;
 
+/// Main application struct for the Lotka-Volterra GUI.
 pub struct LotkaVolterraApp {
     params: LotkaVolterraParameters,
     prey_points: Vec<[f64; 2]>,
@@ -12,6 +14,7 @@ pub struct LotkaVolterraApp {
 }
 
 impl LotkaVolterraApp {
+    /// Create a new instance of the app with the given parameters.
     pub fn new(params: LotkaVolterraParameters) -> Self {
         let mut app = Self {
             params,
@@ -22,6 +25,7 @@ impl LotkaVolterraApp {
         app
     }
 
+    /// Solve the Lotka-Volterra system and update the plot data.
     fn solve_system(&mut self) {
         if let Ok((times, prey, predators)) = solve_lotka_volterra(self.params, [40.0, 9.0], 0.0, 200.0, 0.1) {
             self.prey_points = times.iter().zip(prey.iter()).map(|(&x, &y)| [x, y]).collect();
@@ -31,6 +35,7 @@ impl LotkaVolterraApp {
 }
 
 impl eframe::App for LotkaVolterraApp {
+    /// Update the GUI.
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         egui::CentralPanel::default().show(ctx, |ui| {
             ui.heading("Lotka-Volterra Predator-Prey Model");
@@ -45,4 +50,15 @@ impl eframe::App for LotkaVolterraApp {
             });
         });
     }
+}
+
+/// Launch the interactive GUI.
+pub fn launch_gui(params: LotkaVolterraParameters) -> Result<(), Box<dyn Error>> {
+    let options = eframe::NativeOptions::default();
+    eframe::run_native(
+        "Lotka-Volterra Model",
+        options,
+        Box::new(|_cc| Ok(Box::new(LotkaVolterraApp::new(params)))),
+    )
+    .map_err(|e| SimulationError::GuiError(e.to_string()).into())
 }
