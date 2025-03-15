@@ -1,8 +1,8 @@
 use ode_solvers::{dopri5::Dopri5, System, SVector};
 use plotters::prelude::*;
 use std::error::Error;
+use std::io::{self, Write};
 
-// Define parameters for the Lotka-Volterra system
 #[derive(Debug, Clone, Copy)]
 pub struct LotkaVolterraParams {
     pub alpha: f64, // Prey birth rate
@@ -37,23 +37,11 @@ impl LotkaVolterraSystem {
 
 impl System<f64, State> for LotkaVolterraSystem {
     fn system(&self, _t: f64, y: &State, dydt: &mut State) {
-        dydt[0] = self.params.alpha * y[0] - self.params.beta * y[0] * y[1]; // Prey dynamics
-        dydt[1] = self.params.delta * y[0] * y[1] - self.params.gamma * y[1]; // Predator dynamics
+        dydt[0] = self.params.alpha * y[0] - self.params.beta * y[0] * y[1]; // Prey
+        dydt[1] = self.params.delta * y[0] * y[1] - self.params.gamma * y[1]; // Predator
     }
 }
 
-/// Solves the Lotka-Volterra system and saves the plot to a file.
-///
-/// # Arguments
-/// * `params` - Parameters for the Lotka-Volterra system.
-/// * `y0` - Initial conditions: [prey, predator].
-/// * `t0` - Initial time.
-/// * `t_end` - End time.
-/// * `step` - Step size for the solver.
-/// * `output_file` - Path to save the plot.
-///
-/// # Returns
-/// `Result<(), Box<dyn Error>>` - Result indicating success or failure.
 pub fn plot_lotka_volterra(
     params: LotkaVolterraParams,
     y0: [f64; 2],
@@ -62,7 +50,10 @@ pub fn plot_lotka_volterra(
     step: f64,
     output_file: &str,
 ) -> Result<(), Box<dyn Error>> {
-    // Create the solver
+    if y0.iter().any(|&x| x < 0.0) {
+        return Err("Initial population values must be non-negative".into());
+    }
+
     let mut solver = Dopri5::new(
         LotkaVolterraSystem::new(params),
         t0,
@@ -73,10 +64,8 @@ pub fn plot_lotka_volterra(
         1e-6,
     );
 
-    // Solve the system
     let result = solver.integrate();
 
-    // Extract the solution data
     let (times, prey, predators) = match result {
         Ok(_) => {
             let times: Vec<f64> = solver.x_out().to_vec();
@@ -84,12 +73,9 @@ pub fn plot_lotka_volterra(
             let predators: Vec<f64> = solver.y_out().iter().map(|y| y[1]).collect();
             (times, prey, predators)
         }
-        Err(e) => {
-            return Err(Box::new(e));
-        }
+        Err(e) => return Err(Box::new(e)),
     };
 
-    // Plot the results
     let root = BitMapBackend::new(output_file, (800, 600)).into_drawing_area();
     root.fill(&WHITE)?;
 
@@ -102,7 +88,6 @@ pub fn plot_lotka_volterra(
 
     chart.configure_mesh().draw()?;
 
-    // Plot prey population
     chart
         .draw_series(LineSeries::new(
             times.iter().zip(prey.iter()).map(|(&x, &y)| (x, y)),
@@ -111,7 +96,6 @@ pub fn plot_lotka_volterra(
         .label("Prey")
         .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], &BLUE));
 
-    // Plot predator population
     chart
         .draw_series(LineSeries::new(
             times.iter().zip(predators.iter()).map(|(&x, &y)| (x, y)),
@@ -120,7 +104,6 @@ pub fn plot_lotka_volterra(
         .label("Predators")
         .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], &RED));
 
-    // Configure and draw the legend
     chart
         .configure_series_labels()
         .background_style(&WHITE.mix(0.8))
@@ -128,4 +111,21 @@ pub fn plot_lotka_volterra(
         .draw()?;
 
     Ok(())
+}
+
+/// Helper function to prompt the user for a floating-point number with error handling.
+pub fn prompt_for_float(prompt: &str) -> Result<f64, Box<dyn std::error::Error>> {
+    loop {
+        print!("{}", prompt);
+        io::stdout().flush()?; // Ensure the prompt is displayed immediately
+
+        let mut input = String::new();
+        io::stdin().read_line(&mut input)?;
+
+        // Try parsing the input into an f64
+        match input.trim().parse::<f64>() {
+            Ok(value) => return Ok(value), // Return valid number
+            Err(_) => println!("Invalid input. Please enter a valid number."),
+        }
+    }
 }
