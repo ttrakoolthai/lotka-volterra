@@ -37,7 +37,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         launch_gui(params).map_err(|e| SimulationError::GuiError(e.to_string()))?;
     } else if cli.interactive_plot {
         println!("📊 Launching Interactive Plot...");
-        launch_gui(params).map_err(|e| SimulationError::GuiError(e.to_string()))?;
+            launch_gui(params).map_err(|e| SimulationError::GuiError(e.to_string()))?;
     } else {
         println!("✅ Running simulation...");
 

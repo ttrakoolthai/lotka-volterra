@@ -1,6 +1,6 @@
-use dialoguer::{Confirm, Input, Select};
-use crate::models::LotkaVolterraParameters;
 use crate::error::SimulationError;
+use crate::models::LotkaVolterraParameters;
+use dialoguer::{Confirm, Input, Select};
 use std::error::Error;
 
 /// Interactive mode for user input.

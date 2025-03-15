@@ -1,9 +1,4 @@
-// models.rs (Define parameters & system behavior)
-// LotkaVolterraParameters
-// LotkaVolterraSystem
-// Implements System<f64, State>,  (Defines Lotka-Volterra parameters & system)
-
-// src/models.rs
+// src/models.rs (Define parameters & system behavior)
 use ode_solvers::SVector;
 
 #[derive(Debug, Clone, Copy)]
