@@ -63,7 +63,7 @@ pub fn interactive_mode() -> Result<Option<LotkaVolterraParameters>, Box<dyn Err
 
 /// Validate Lotka-Volterra parameters.
 fn validate_params(params: &LotkaVolterraParameters) -> Result<(), SimulationError> {
-    if params.alpha < 0.0 || params.beta < 0.0 || params.delta < 0.0 || params.gamma < 0.0 {
+    if params.alpha < 0.0 || params.beta < 0.0 || params.delta < 0.0 || params.gamma < 0.0 || params.initial_prey < 0.0 || params.initial_predator < 0.0 {
         return Err(SimulationError::InvalidParameter(
             "All parameters must be non-negative.".to_string(),
         ));
