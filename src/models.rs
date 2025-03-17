@@ -3,19 +3,23 @@ use ode_solvers::SVector;
 
 #[derive(Debug, Clone, Copy)]
 pub struct LotkaVolterraParameters {
-    pub alpha: f64,
-    pub beta: f64,
-    pub delta: f64,
-    pub gamma: f64,
+    pub alpha: f64,              // Prey birth rate
+    pub beta: f64,               // Predation rate
+    pub delta: f64,              // Predator reproduction rate
+    pub gamma: f64,              // Predator death rate
+    pub initial_prey: f64,       // Initial prey population
+    pub initial_predator: f64,    // Initial predator population
 }
 
 impl Default for LotkaVolterraParameters {
     fn default() -> Self {
         Self {
-            alpha: 0.1,
-            beta: 0.02,
-            delta: 0.01,
-            gamma: 0.1,
+            alpha: 0.1,              // Prey birth rate
+            beta: 0.02,               // Predation rate
+            delta: 0.01,              // Predator reproduction rate
+            gamma: 0.1,               // Predator death rate
+            initial_prey: 100.0,      // Initial prey population
+            initial_predator: 100.0,  // Initial predator population
         }
     }
 }

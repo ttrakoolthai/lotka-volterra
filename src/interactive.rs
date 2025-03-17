@@ -1,10 +1,12 @@
-use crate::error::SimulationError;
-use crate::models::LotkaVolterraParameters;
 use dialoguer::{Confirm, Input, Select};
+use crate::models::LotkaVolterraParameters;
+use crate::error::SimulationError;
 use std::error::Error;
 
 /// Interactive mode for user input.
-pub fn interactive_mode() -> Result<LotkaVolterraParameters, Box<dyn Error>> {
+/// Returns `Ok(Some(params))` if the user selects "Use default parameters" or "Enter custom parameters".
+/// Returns `Ok(None)` if the user selects "Interactive Plot".
+pub fn interactive_mode() -> Result<Option<LotkaVolterraParameters>, Box<dyn Error>> {
     println!("🎯 Welcome to the Lotka-Volterra Simulation CLI!");
 
     let choices = &[
@@ -19,42 +21,44 @@ pub fn interactive_mode() -> Result<LotkaVolterraParameters, Box<dyn Error>> {
         .interact()
         .unwrap();
 
-    let params = if selection == 0 {
-        LotkaVolterraParameters::default()
-    } else if selection == 1 {
-        LotkaVolterraParameters {
-            alpha: Input::new()
-                .with_prompt("Enter prey birth rate (alpha)")
-                .interact_text()?,
-            beta: Input::new()
-                .with_prompt("Enter predation rate (beta)")
-                .interact_text()?,
-            delta: Input::new()
-                .with_prompt("Enter predator reproduction rate (delta)")
-                .interact_text()?,
-            gamma: Input::new()
-                .with_prompt("Enter predator death rate (gamma)")
-                .interact_text()?,
+    match selection {
+        0 => {
+            // Use default parameters
+            let params = LotkaVolterraParameters::default();
+            validate_params(&params)?;
+            Ok(Some(params))
         }
-    } else {
-        LotkaVolterraParameters::default()
-    };
-
-    // Validate parameters
-    validate_params(&params)?;
-
-    let confirm = Confirm::new()
-        .with_prompt("Start the simulation with these parameters?")
-        .default(true)
-        .interact()
-        .unwrap();
-
-    if !confirm {
-        println!("🚫 Simulation canceled.");
-        return Err(Box::new(SimulationError::UserCancelled));
+        1 => {
+            // Enter custom parameters
+            let params = LotkaVolterraParameters {
+                alpha: Input::new()
+                    .with_prompt("Enter prey birth rate (alpha)")
+                    .interact_text()?,
+                beta: Input::new()
+                    .with_prompt("Enter predation rate (beta)")
+                    .interact_text()?,
+                delta: Input::new()
+                    .with_prompt("Enter predator reproduction rate (delta)")
+                    .interact_text()?,
+                gamma: Input::new()
+                    .with_prompt("Enter predator death rate (gamma)")
+                    .interact_text()?,
+                initial_prey: Input::new()
+                .with_prompt("Enter initial predator population")
+                .interact_text()?,
+                initial_predator: Input::new()
+                .with_prompt("Enter initial predator population")
+                .interact_text()?
+            };
+            validate_params(&params)?;
+            Ok(Some(params))
+        }
+        2 => {
+            // Interactive Plot: Skip confirmation and return None
+            Ok(None)
+        }
+        _ => unreachable!(), // This should never happen
     }
-
-    Ok(params)
 }
 
 /// Validate Lotka-Volterra parameters.
