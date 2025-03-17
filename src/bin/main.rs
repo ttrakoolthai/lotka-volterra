@@ -27,6 +27,10 @@ fn main() -> Result<(), Box<dyn Error>> {
         || cli.beta.is_none()
         || cli.delta.is_none()
         || cli.gamma.is_none()
+        || cli.initial_prey.is_none()
+        || cli.initial_predator.is_none()
+        || cli.t_start.is_none()
+        || cli.t_end.is_none()
     {
         match interactive_mode()? {
             Some(params) => params, // User selected "Use default parameters" or "Enter custom parameters"
@@ -40,6 +44,8 @@ fn main() -> Result<(), Box<dyn Error>> {
                     gamma: 0.0,
                     initial_prey: 0.0,
                     initial_predator: 0.0,
+                    t_start: 0.0,
+                    t_end: 200.0,
                 };
                 launch_gui(params).map_err(|e| SimulationError::GuiError(e.to_string()))?;
                 return Ok(()); // Exit after launching the GUI
@@ -54,6 +60,8 @@ fn main() -> Result<(), Box<dyn Error>> {
             gamma: cli.gamma.unwrap(),
             initial_prey: cli.initial_prey.unwrap(),
             initial_predator: cli.initial_predator.unwrap(),
+            t_start: cli.t_start.unwrap(),
+            t_end: cli.t_end.unwrap(),
         };
         params
     };

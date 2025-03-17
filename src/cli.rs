@@ -29,6 +29,14 @@ pub struct Cli {
     #[arg(short = 'Q', long = "initial-predator")]
     pub initial_predator: Option<f64>,
 
+    /// Initial prey population
+    #[arg(short = 't', long = "start")]
+    pub t_start: Option<f64>,
+
+    /// Initial predator population
+    #[arg(short = 'T', long = "end")]
+    pub t_end: Option<f64>,
+
     /// Run in interactive mode
     #[arg(short = 'i', long = "interactive")]
     pub interactive: bool,

@@ -44,11 +44,17 @@ pub fn interactive_mode() -> Result<Option<LotkaVolterraParameters>, Box<dyn Err
                     .with_prompt("Enter predator death rate (gamma)")
                     .interact_text()?,
                 initial_prey: Input::new()
-                .with_prompt("Enter initial predator population")
-                .interact_text()?,
+                    .with_prompt("Enter initial predator population")
+                    .interact_text()?,
                 initial_predator: Input::new()
-                .with_prompt("Enter initial predator population")
-                .interact_text()?
+                    .with_prompt("Enter initial predator population")
+                    .interact_text()?,
+                t_start: Input::new()
+                    .with_prompt("Enter simulation start time (t0)") // 🔹 Fixed prompt
+                    .interact_text()?,
+                t_end: Input::new()
+                    .with_prompt("Enter simulation end time (t_end)") // 🔹 Fixed prompt
+                    .interact_text()?,
             };
             validate_params(&params)?;
             Ok(Some(params))
@@ -63,7 +69,7 @@ pub fn interactive_mode() -> Result<Option<LotkaVolterraParameters>, Box<dyn Err
 
 /// Validate Lotka-Volterra parameters.
 fn validate_params(params: &LotkaVolterraParameters) -> Result<(), SimulationError> {
-    if params.alpha < 0.0 || params.beta < 0.0 || params.delta < 0.0 || params.gamma < 0.0 || params.initial_prey < 0.0 || params.initial_predator < 0.0 {
+    if params.alpha < 0.0 || params.beta < 0.0 || params.delta < 0.0 || params.gamma < 0.0 || params.initial_prey < 0.0 || params.initial_predator < 0.0 || params.t_start < 0.0 || params.t_end < 0.0 || params.t_end < params.t_start {
         return Err(SimulationError::InvalidParameter(
             "All parameters must be non-negative.".to_string(),
         ));

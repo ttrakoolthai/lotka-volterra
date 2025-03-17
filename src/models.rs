@@ -9,6 +9,8 @@ pub struct LotkaVolterraParameters {
     pub gamma: f64,              // Predator death rate
     pub initial_prey: f64,       // Initial prey population
     pub initial_predator: f64,    // Initial predator population
+    pub t_start: f64,
+    pub t_end: f64,
 }
 
 impl Default for LotkaVolterraParameters {
@@ -20,6 +22,8 @@ impl Default for LotkaVolterraParameters {
             gamma: 0.1,               // Predator death rate
             initial_prey: 100.0,      // Initial prey population
             initial_predator: 100.0,  // Initial predator population
+            t_start: 0.0,
+            t_end: 200.0,
         }
     }
 }

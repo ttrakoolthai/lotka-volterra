@@ -12,6 +12,8 @@ pub struct LotkaVolterraApp {
     predator_points: Vec<[f64; 2]>,   // Predator population over time
     phase_points: Vec<[f64; 2]>,      // Predator vs. Prey (phase plot)
     error_message: Option<String>,    // Stores error messages for display
+    t_start: f64, // 🔹 New: Start time
+    t_end: f64, // 🔹 New: Total simulation time
 }
 
 impl LotkaVolterraApp {
@@ -23,6 +25,8 @@ impl LotkaVolterraApp {
             predator_points: Vec::new(),
             phase_points: Vec::new(),
             error_message: None,
+            t_start: 0.0, // Default simulation duration
+            t_end: 200.0, // Default simulation duration
         };
         app.solve_system(); // Solve the system and initialize the plot data
         app
@@ -32,10 +36,9 @@ impl LotkaVolterraApp {
     fn solve_system(&mut self) {
         let y0 = [self.params.initial_prey, self.params.initial_predator];
         let t0 = 0.0;
-        let t_end = 200.0;
         let step = 0.1;
 
-        match solve_lotka_volterra(self.params, y0, t0, t_end, step) {
+        match solve_lotka_volterra(self.params, y0, t0, self.t_end, step) {
             Ok((times, prey, predators)) => {
                 self.prey_points = times.iter().zip(prey.iter()).map(|(&x, &y)| [x, y]).collect();
                 self.predator_points = times.iter().zip(predators.iter()).map(|(&x, &y)| [x, y]).collect();
@@ -123,6 +126,12 @@ impl eframe::App for LotkaVolterraApp {
                                 self.solve_system();
                             }
                             if ui.add(egui::Slider::new(&mut self.params.initial_predator, 0.0..=50.0).text("Predator")).changed() {
+                                self.solve_system();
+                            }
+                            if ui.add(egui::Slider::new(&mut self.t_start, 0.0..=self.t_end - 10.0).text("Start Time")).changed() {
+                                self.solve_system();
+                            }
+                            if ui.add(egui::Slider::new(&mut self.t_end, 50.0..=500.0).text("Time End")).changed() {
                                 self.solve_system();
                             }
                         });
