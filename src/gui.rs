@@ -29,8 +29,63 @@ impl LotkaVolterraApp {
             t_start: 0.0, // Default simulation duration
             t_end: 200.0, // Default simulation duration
         };
+                // 🔹 Print the table **once** when the app starts
+                app.print_parameter_table();
         app.solve_system(); // Solve the system and initialize the plot data
         app
+    }
+
+    fn print_parameter_table(&self) {
+        use prettytable::{Table, Row, Cell};
+
+        let mut table = Table::new();
+
+        table.add_row(Row::new(vec![
+            Cell::new("+------------------------------------------+--------+"),
+        ]));
+        table.add_row(Row::new(vec![
+            Cell::new("| Parameter                                | Value  |"),
+        ]));
+        table.add_row(Row::new(vec![
+            Cell::new("+------------------------------------------+--------+"),
+        ]));
+        table.add_row(Row::new(vec![
+            Cell::new("| Alpha (Prey Birth Rate)                  |"),
+            Cell::new(&format!("{:.4}  |", self.params.alpha))
+        ]));
+        table.add_row(Row::new(vec![
+            Cell::new("| Beta (Predation Rate)                     |"),
+            Cell::new(&format!("{:.4}  |", self.params.beta))
+        ]));
+        table.add_row(Row::new(vec![
+            Cell::new("| Delta (Predator Reproduction Rate)        |"),
+            Cell::new(&format!("{:.4}  |", self.params.delta))
+        ]));
+        table.add_row(Row::new(vec![
+            Cell::new("| Gamma (Predator Death Rate)               |"),
+            Cell::new(&format!("{:.4}  |", self.params.gamma))
+        ]));
+        table.add_row(Row::new(vec![
+            Cell::new("| Initial Prey Population                   |"),
+            Cell::new(&format!("{:.2}  |", self.params.initial_prey))
+        ]));
+        table.add_row(Row::new(vec![
+            Cell::new("| Initial Predator Population               |"),
+            Cell::new(&format!("{:.2}  |", self.params.initial_predator))
+        ]));
+        table.add_row(Row::new(vec![
+            Cell::new("| t_start                                   |"),
+            Cell::new(&format!("{:.2}  |", self.t_start))
+        ]));
+        table.add_row(Row::new(vec![
+            Cell::new("| t_end                                     |"),
+            Cell::new(&format!("{:.2}  |", self.t_end))
+        ]));
+        table.add_row(Row::new(vec![
+            Cell::new("+------------------------------------------+--------+"),
+        ]));
+
+        table.printstd(); // ✅ Print table once at startup
     }
 
     /// Solve the Lotka-Volterra system and update the plot data.
@@ -201,6 +256,10 @@ impl eframe::App for LotkaVolterraApp {
                 });
         });
     }
+        /// 🔹 Handle window close event
+        fn on_exit(&mut self, _gl: Option<&eframe::glow::Context>) {
+            println!("Simulation terminating");
+        }
 }
 
 /// Launch the interactive GUI.
