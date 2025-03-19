@@ -1,27 +1,29 @@
 use clap::Parser;
 use lotka_volterra::{
-    cli::Cli,
-    interactive::interactive_mode,
-    models::*,
-    plot::*,
-    solver::*,
-    gui::launch_gui,
-    error::SimulationError,
+    cli::Cli, error::SimulationError, gui::launch_gui, interactive::interactive_mode, models::*,
+    plot::*, solver::*,
 };
 use std::error::Error;
 
+/// Parses the command-line for the arguments needed to solve the Lotka-Volterra
+/// differential equation. By default, the program launches an interactive menu
+/// when no command-line arguments are supplied. The program will save the plot
+/// as a graph as a png in the directory of the project.
 fn main() -> Result<(), Box<dyn Error>> {
     let cli = Cli::parse();
 
-    // If --gui is provided, skip the menu and go straight to the GUI
+    // Skips interactive menu if program is run with the GUI option
     if cli.gui {
-        println!("🚀 Launching interactive GUI...");
-        let params = LotkaVolterraParameters::default(); // Use default parameters
+        println!("\nLaunching interactive GUI...");
+
+        // GUI begins with default parameters
+        let params = LotkaVolterraParameters::default();
         launch_gui(params).map_err(|e| SimulationError::GuiError(e.to_string()))?;
+
         return Ok(());
     }
 
-    // Determine parameters: use CLI args if provided, otherwise enter interactive mode
+    // Determine parameters for CLI arguments if provided; use interactive mode otherwise
     let params = if cli.interactive
         || cli.alpha.is_none()
         || cli.beta.is_none()
@@ -33,27 +35,28 @@ fn main() -> Result<(), Box<dyn Error>> {
         || cli.t_end.is_none()
     {
         match interactive_mode()? {
-            Some(params) => params, // User selected "Use default parameters" or "Enter custom parameters"
+            // User selected "Use default parameters" or "Enter custom parameters"
+            Some(params) => params,
             None => {
                 // User selected "Interactive Plot"
-                println!("🚀 Launching interactive GUI...");
+                println!("\nLaunching interactive GUI...");
                 let params = LotkaVolterraParameters {
-                    alpha: 0.0,
-                    beta: 0.0,
-                    delta: 0.0,
-                    gamma: 0.0,
-                    initial_prey: 0.0,
-                    initial_predator: 0.0,
+                    alpha: 0.01,
+                    beta: 0.00001,
+                    delta: 0.00001,
+                    gamma: 0.01,
+                    initial_prey: 2000.0,
+                    initial_predator: 2000.0,
                     t_start: 0.0,
-                    t_end: 200.0,
+                    t_end: 8000.0,
                 };
                 launch_gui(params).map_err(|e| SimulationError::GuiError(e.to_string()))?;
-                return Ok(()); // Exit after launching the GUI
+                return Ok(());
             }
         }
     } else {
         // Use CLI arguments
-        let params = LotkaVolterraParameters {
+        LotkaVolterraParameters {
             alpha: cli.alpha.unwrap(),
             beta: cli.beta.unwrap(),
             delta: cli.delta.unwrap(),
@@ -62,21 +65,20 @@ fn main() -> Result<(), Box<dyn Error>> {
             initial_predator: cli.initial_predator.unwrap(),
             t_start: cli.t_start.unwrap(),
             t_end: cli.t_end.unwrap(),
-        };
-        params
+        }
     };
 
-    // Run the simulation based on the selected mode
+    // Run simulation with selected mode
     if cli.interactive_plot {
-        println!("🚀 Launching interactive GUI...");
+        println!("\nLaunching interactive GUI...");
         launch_gui(params).map_err(|e| SimulationError::GuiError(e.to_string()))?;
     } else {
-        println!("✅ Running simulation...");
+        println!("\nRunning simulation...");
 
-        // Initial conditions: [prey, predator]
-        let y0 = [40.0, 9.0];
+        // Initial conditions
+        let y0 = [2000.0, 2000.0];
         let t0 = 0.0;
-        let t_end = 200.0;
+        let t_end = 8000.0;
         let step = 0.1;
 
         // Run the simulation
@@ -87,7 +89,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         plot_lotka_volterra(&times, &prey, &predators, "lotka_volterra.png")
             .map_err(|e| SimulationError::PlotError(e.to_string()))?;
 
-        println!("📊 Plot saved as lotka_volterra.png");
+        println!("Plot saved as lotka_volterra.png");
     }
 
     Ok(())
